@@ -2,6 +2,10 @@
 #define OVTTREND_H
 
 #include <QMainWindow>
+#include <QtWidgets>
+
+class Plotter;
+class IconEditor;
 class QAction;
 class QLabel;
 
@@ -41,9 +45,22 @@ private:
 	bool saveFile(const QString &fileName);
 	void setCurrentFile(const QString &fileName);
 	void updateRecentFileActions();
+
+	void createLeftTop();
+	void createLeftBottom();
+	void createDock();
 	QString strippedName(const QString &fullFileName);
 
-	QWidget *spreadsheet;
+	QTableView *LeftTopTableView;
+	QScrollArea *scrollArea; //左上角点列表
+	Plotter *Graph;
+	QTableView *LeftBottomTableView;
+	QTabWidget * LeftBottomTab; //左下角视图
+	QTreeWidget *dockTree;
+	QDockWidget *dockWidget; //右边点属性
+	QSplitter *spreadsheet; //主页面
+
+
 //	FindDialog *findDialog;
 	QLabel *locationLabel;
 	QLabel *formulaLabel;

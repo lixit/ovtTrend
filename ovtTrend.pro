@@ -25,11 +25,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        iconeditor.cpp \
         main.cpp \
-        ovttrend.cpp
+        ovttrend.cpp \
+        plotter.cpp
 
 HEADERS += \
-        ovttrend.h
+        iconeditor.h \
+        ovttrend.h \
+        plotter.h
 
 FORMS += \
         ovttrend.ui
@@ -40,4 +44,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-	icons.qrc
+	iconeditor.qrc \
+	icons.qrc \
+	plotter.qrc

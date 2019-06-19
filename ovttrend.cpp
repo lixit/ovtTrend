@@ -1,12 +1,22 @@
-#include "ovttrend.h"
-#include <QtWidgets>
 #include <QtWidgets>
 
+#include "ovttrend.h"
+#include "iconeditor.h"
+#include "plotter.h"
 
 
 MainWindow::MainWindow()
 {
-	spreadsheet = new QWidget;
+	createLeftTop();
+	createLeftBottom();
+	createDock();
+
+	spreadsheet = new QSplitter(Qt::Vertical);
+	spreadsheet->addWidget(scrollArea);
+	spreadsheet->addWidget(LeftBottomTab);
+
+	spreadsheet->setStretchFactor(1, 1);
+
 	setCentralWidget(spreadsheet);
 
 	createActions();
@@ -17,10 +27,38 @@ MainWindow::MainWindow()
 
 	readSettings();
 
-
-
 	setWindowIcon(QIcon(":/images/icon.png"));
 	setCurrentFile("");
+
+}
+
+void MainWindow::createLeftTop()
+{
+	LeftTopTableView = new QTableView;
+	scrollArea = new QScrollArea;
+	scrollArea->setWidget(LeftTopTableView);
+	scrollArea->setWindowTitle(QObject::tr("QTextEdit"));
+
+}
+
+void MainWindow::createLeftBottom()
+{
+	Graph = new Plotter;
+	LeftTopTableView = new QTableView;
+	LeftBottomTab = new QTabWidget;
+
+}
+
+void MainWindow::createDock()
+{
+	dockTree = new QTreeWidget;
+	dockWidget = new QDockWidget(tr("Property"));
+	dockWidget->setObjectName("shapesDockWidget");
+	dockWidget->setWidget(dockTree);
+	dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea
+	| Qt::RightDockWidgetArea);
+	addDockWidget(Qt::RightDockWidgetArea, dockWidget);
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -204,48 +242,48 @@ void MainWindow::createActions()
 	cutAction->setShortcut(QKeySequence::Cut);
 	cutAction->setStatusTip(tr("Cut the current selection's contents "
 							   "to the clipboard"));
-	connect(cutAction, SIGNAL(triggered()), spreadsheet, SLOT(cut()));
+//	connect(cutAction, SIGNAL(triggered()), spreadsheet, SLOT(cut()));
 
 	copyAction = new QAction(tr("&Copy"), this);
 	copyAction->setIcon(QIcon(":/images/copy.png"));
 	copyAction->setShortcut(QKeySequence::Copy);
 	copyAction->setStatusTip(tr("Copy the current selection's contents "
 								"to the clipboard"));
-	connect(copyAction, SIGNAL(triggered()), spreadsheet, SLOT(copy()));
+//	connect(copyAction, SIGNAL(triggered()), spreadsheet, SLOT(copy()));
 
 	pasteAction = new QAction(tr("&Paste"), this);
 	pasteAction->setIcon(QIcon(":/images/paste.png"));
 	pasteAction->setShortcut(QKeySequence::Paste);
 	pasteAction->setStatusTip(tr("Paste the clipboard's contents into "
 								 "the current selection"));
-	connect(pasteAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(paste()));
+//	connect(pasteAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(paste()));
 
 	deleteAction = new QAction(tr("&Delete"), this);
 	deleteAction->setShortcut(QKeySequence::Delete);
 	deleteAction->setStatusTip(tr("Delete the current selection's "
 								  "contents"));
-	connect(deleteAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(del()));
+//	connect(deleteAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(del()));
 
 	selectRowAction = new QAction(tr("&Row"), this);
 	selectRowAction->setStatusTip(tr("Select all the cells in the "
 									 "current row"));
-	connect(selectRowAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(selectCurrentRow()));
+//	connect(selectRowAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(selectCurrentRow()));
 
 	selectColumnAction = new QAction(tr("&Column"), this);
 	selectColumnAction->setStatusTip(tr("Select all the cells in the "
 										"current column"));
-	connect(selectColumnAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(selectCurrentColumn()));
+//	connect(selectColumnAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(selectCurrentColumn()));
 
 	selectAllAction = new QAction(tr("&All"), this);
 	selectAllAction->setShortcut(QKeySequence::SelectAll);
 	selectAllAction->setStatusTip(tr("Select all the cells in the "
 									 "spreadsheet"));
-	connect(selectAllAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(selectAll()));
+//	connect(selectAllAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(selectAll()));
 
 	findAction = new QAction(tr("&Find..."), this);
 	findAction->setIcon(QIcon(":/images/find.png"));
@@ -264,8 +302,8 @@ void MainWindow::createActions()
 	recalculateAction->setShortcut(tr("F9"));
 	recalculateAction->setStatusTip(tr("Recalculate all the "
 									   "spreadsheet's formulas"));
-	connect(recalculateAction, SIGNAL(triggered()),
-			spreadsheet, SLOT(recalculate()));
+//	connect(recalculateAction, SIGNAL(triggered()),
+//			spreadsheet, SLOT(recalculate()));
 
 	sortAction = new QAction(tr("&Sort..."), this);
 	sortAction->setStatusTip(tr("Sort the selected cells or all the "
@@ -277,8 +315,8 @@ void MainWindow::createActions()
 
 	showGridAction->setStatusTip(tr("Show or hide the spreadsheet's "
 									"grid"));
-	connect(showGridAction, SIGNAL(toggled(bool)),
-			spreadsheet, SLOT(setShowGrid(bool)));
+//	connect(showGridAction, SIGNAL(toggled(bool)),
+//			spreadsheet, SLOT(setShowGrid(bool)));
 #if QT_VERSION < 0x040102
 	// workaround for a QTableWidget bug in Qt 4.1.1
 	connect(showGridAction, SIGNAL(toggled(bool)),
@@ -290,8 +328,8 @@ void MainWindow::createActions()
 //	autoRecalcAction->setChecked(spreadsheet->autoRecalculate());
 	autoRecalcAction->setStatusTip(tr("Switch auto-recalculation on or "
 									  "off"));
-	connect(autoRecalcAction, SIGNAL(toggled(bool)),
-			spreadsheet, SLOT(setAutoRecalculate(bool)));
+//	connect(autoRecalcAction, SIGNAL(toggled(bool)),
+//			spreadsheet, SLOT(setAutoRecalculate(bool)));
 
 	aboutAction = new QAction(tr("&About"), this);
 	aboutAction->setStatusTip(tr("Show the application's About box"));
