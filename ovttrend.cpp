@@ -30,34 +30,90 @@ MainWindow::MainWindow()
 	setWindowIcon(QIcon(":/images/icon.png"));
 	setCurrentFile("");
 
+	QTimer::singleShot(0, this, SLOT(loadFiles()));
 }
 
 void MainWindow::createLeftTop()
 {
-	LeftTopTableView = new QTableView;
+	QStringList messageLabels;
+	messageLabels << tr("Point Name") << tr("Description") << tr("End Value") << tr("Units") << tr("Low Scale") << tr("High Scale");
+
+	pointsTreeWidget = new QTreeWidget;
+	pointsTreeWidget->setHeaderLabels(messageLabels);
+	addMessage(tr("Point name 1"),
+			   tr("This is point 1 description"),
+			   tr("66666"));
+	addMessage(tr("Point name 2"),
+			   tr("Try to say something"),
+			   tr("99999"));
+	pointsTreeWidget->resizeColumnToContents(0);
+	pointsTreeWidget->resizeColumnToContents(1);
+
+
 	scrollArea = new QScrollArea;
-	scrollArea->setWidget(LeftTopTableView);
-	scrollArea->setWindowTitle(QObject::tr("QTextEdit"));
+	scrollArea->setWidget(pointsTreeWidget);
+	scrollArea->setWindowTitle(QObject::tr("Points List Info"));
+	scrollArea->setWidgetResizable(true);
 
 }
+
+void MainWindow::addMessage(const QString &subject, const QString &from,
+							const QString &date)
+{
+	QTreeWidgetItem *newItem = new QTreeWidgetItem(pointsTreeWidget);
+	newItem->setText(0, subject);
+	newItem->setText(1, from);
+	newItem->setText(2, date);
+
+	if (!pointsTreeWidget->currentItem())
+		pointsTreeWidget->setCurrentItem(newItem);
+}
+
 
 void MainWindow::createLeftBottom()
 {
 	Graph = new Plotter;
-	LeftTopTableView = new QTableView;
-	LeftBottomTab = new QTabWidget;
 
+	QStringList messageLabels;
+	messageLabels << tr("Date Time") << tr("Vaule") << tr("Low") << tr("High");
+
+	detailTreeWidget = new QTreeWidget;
+	detailTreeWidget->setHeaderLabels(messageLabels);
+
+	QTreeWidgetItem *newItem = new QTreeWidgetItem(detailTreeWidget);
+	newItem->setText(0, tr("2019-6-20 13:50"));
+	newItem->setText(1, tr("1000"));
+	newItem->setText(2, tr("2"));
+	newItem->setText(3, tr("5000"));
+
+	detailTreeWidget->resizeColumnToContents(0);
+	detailTreeWidget->resizeColumnToContents(1);
+
+	LeftBottomTab = new QTabWidget;
+	LeftBottomTab->addTab(Graph, QObject::tr("Graph"));
+	LeftBottomTab->addTab(detailTreeWidget, QObject::tr("Table view"));
 }
 
 void MainWindow::createDock()
 {
+	QStringList messageLabels;
+	messageLabels << tr("Name") << tr("Location");
+
 	dockTree = new QTreeWidget;
+	dockTree->setHeaderLabels(messageLabels);
+
+	QTreeWidgetItem *newItem = new QTreeWidgetItem(dockTree);
+	newItem->setText(0, tr("something"));
+
+
 	dockWidget = new QDockWidget(tr("Property"));
-	dockWidget->setObjectName("shapesDockWidget");
+	dockWidget->setObjectName("propertyDockWidget");
 	dockWidget->setWidget(dockTree);
 	dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea
 	| Qt::RightDockWidgetArea);
 	addDockWidget(Qt::RightDockWidgetArea, dockWidget);
+
+	setCorner(Qt::TopRightCorner,Qt::LeftDockWidgetArea);
 
 }
 
@@ -70,6 +126,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		event->ignore();
 	}
 }
+
+void MainWindow::loadFiles()  //handle command line parameters
+{
+	QStringList args = QApplication::arguments();
+	args.removeFirst();
+	if (!args.isEmpty()) {
+		foreach (QString arg, args)
+			open();
+	} else {
+		newFile();
+	}
+}
+
 
 void MainWindow::newFile()
 {
@@ -409,7 +478,7 @@ void MainWindow::createToolBars()
 
 void MainWindow::createStatusBar()
 {
-	locationLabel = new QLabel(" W999 ");
+	locationLabel = new QLabel(" Program loaded! ");
 	locationLabel->setAlignment(Qt::AlignHCenter);
 	locationLabel->setMinimumSize(locationLabel->sizeHint());
 

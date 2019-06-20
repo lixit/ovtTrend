@@ -20,6 +20,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
+	void loadFiles();  //command line parameters
 	void newFile();
 	void open();
 	bool save();
@@ -49,12 +50,16 @@ private:
 	void createLeftTop();
 	void createLeftBottom();
 	void createDock();
+
+	void addMessage(const QString &subject, const QString &from,
+					const QString &date);
 	QString strippedName(const QString &fullFileName);
 
-	QTableView *LeftTopTableView;
+	QTreeWidget *pointsTreeWidget;
 	QScrollArea *scrollArea; //左上角点列表
 	Plotter *Graph;
 	QTableView *LeftBottomTableView;
+	QTreeWidget *detailTreeWidget;
 	QTabWidget * LeftBottomTab; //左下角视图
 	QTreeWidget *dockTree;
 	QDockWidget *dockWidget; //右边点属性
