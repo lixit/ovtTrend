@@ -25,9 +25,13 @@ MainWindow::MainWindow()
 	createToolBars();
 	createStatusBar();
 
+	fileToolBar->hide();
+	connect(homeAction, SIGNAL(toggled(bool)), fileToolBar, SLOT(setVisible(bool)));
+//	connect(homeMenu, SIGNAL(aboutToHide()), fileToolBar, SLOT(hide()));
+
 	readSettings();
 
-	setWindowIcon(QIcon(":/images/icon.png"));
+	setWindowIcon(QIcon(":/images/icon.svg"));
 	setCurrentFile("");
 
 	QTimer::singleShot(0, this, SLOT(loadFiles()));
@@ -72,7 +76,23 @@ void MainWindow::addMessage(const QString &subject, const QString &from,
 
 void MainWindow::createLeftBottom()
 {
-	Graph = new Plotter;
+	Graph = new QChartView;
+
+	QLineSeries* series = new QLineSeries();
+	series->append(0, 6);
+	series->append(2, 4);
+	series->append(3, 8);
+	series->append(7, 4);
+	series->append(10, 5);
+	*series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
+
+	QChart *chart = new QChart();
+	chart->legend()->hide();
+	chart->addSeries(series);
+	chart->createDefaultAxes();
+	chart->setTitle("Simple line chart example");
+	Graph = new QChartView(chart);
+	Graph->setRenderHint(QPainter::Antialiasing);
 
 	QStringList messageLabels;
 	messageLabels << tr("Date Time") << tr("Vaule") << tr("Low") << tr("High");
@@ -272,19 +292,19 @@ void MainWindow::spreadsheetModified()
 void MainWindow::createActions()
 {
 	newAction = new QAction(tr("&New"), this);
-	newAction->setIcon(QIcon(":/images/new.png"));
+	newAction->setIcon(QIcon(":/images/new.svg"));
 	newAction->setShortcut(QKeySequence::New);
 	newAction->setStatusTip(tr("Create a new spreadsheet file"));
 	connect(newAction, SIGNAL(triggered()), this, SLOT(newFile()));
 
 	openAction = new QAction(tr("&Open..."), this);
-	openAction->setIcon(QIcon(":/images/open.png"));
+	openAction->setIcon(QIcon(":/images/open.svg"));
 	openAction->setShortcut(QKeySequence::Open);
 	openAction->setStatusTip(tr("Open an existing spreadsheet file"));
 	connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
 
 	saveAction = new QAction(tr("&Save"), this);
-	saveAction->setIcon(QIcon(":/images/save.png"));
+	saveAction->setIcon(QIcon(":/images/save.svg"));
 	saveAction->setShortcut(QKeySequence::Save);
 	saveAction->setStatusTip(tr("Save the spreadsheet to disk"));
 	connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
@@ -307,26 +327,32 @@ void MainWindow::createActions()
 	connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
 	cutAction = new QAction(tr("Cu&t"), this);
-	cutAction->setIcon(QIcon(":/images/cut.png"));
+	cutAction->setIcon(QIcon(":/images/cut.svg"));
 	cutAction->setShortcut(QKeySequence::Cut);
 	cutAction->setStatusTip(tr("Cut the current selection's contents "
 							   "to the clipboard"));
 //	connect(cutAction, SIGNAL(triggered()), spreadsheet, SLOT(cut()));
 
 	copyAction = new QAction(tr("&Copy"), this);
-	copyAction->setIcon(QIcon(":/images/copy.png"));
+	copyAction->setIcon(QIcon(":/images/copy.svg"));
 	copyAction->setShortcut(QKeySequence::Copy);
 	copyAction->setStatusTip(tr("Copy the current selection's contents "
 								"to the clipboard"));
 //	connect(copyAction, SIGNAL(triggered()), spreadsheet, SLOT(copy()));
 
 	pasteAction = new QAction(tr("&Paste"), this);
-	pasteAction->setIcon(QIcon(":/images/paste.png"));
+	pasteAction->setIcon(QIcon(":/images/paste.svg"));
 	pasteAction->setShortcut(QKeySequence::Paste);
 	pasteAction->setStatusTip(tr("Paste the clipboard's contents into "
 								 "the current selection"));
 //	connect(pasteAction, SIGNAL(triggered()),
 //			spreadsheet, SLOT(paste()));
+	pauseAction = new QAction(tr("Pause"), this);
+	pauseAction->setIcon(QIcon(":/images/pause.svg"));
+
+	refreshAction = new QAction(tr("Refresh"), this);
+	refreshAction->setIcon(QIcon(":/images/refresh.svg"));
+
 
 	deleteAction = new QAction(tr("&Delete"), this);
 	deleteAction->setShortcut(QKeySequence::Delete);
@@ -354,18 +380,6 @@ void MainWindow::createActions()
 //	connect(selectAllAction, SIGNAL(triggered()),
 //			spreadsheet, SLOT(selectAll()));
 
-	findAction = new QAction(tr("&Find..."), this);
-	findAction->setIcon(QIcon(":/images/find.png"));
-	findAction->setShortcut(QKeySequence::Find);
-	findAction->setStatusTip(tr("Find a matching cell"));
-	connect(findAction, SIGNAL(triggered()), this, SLOT(find()));
-
-	goToCellAction = new QAction(tr("&Go to Cell..."), this);
-	goToCellAction->setIcon(QIcon(":/images/gotocell.png"));
-	goToCellAction->setShortcut(tr("Ctrl+G"));
-	goToCellAction->setStatusTip(tr("Go to the specified cell"));
-	connect(goToCellAction, SIGNAL(triggered()),
-			this, SLOT(goToCell()));
 
 	recalculateAction = new QAction(tr("&Recalculate"), this);
 	recalculateAction->setShortcut(tr("F9"));
@@ -411,39 +425,36 @@ void MainWindow::createActions()
 
 void MainWindow::createMenus()
 {
-	fileMenu = menuBar()->addMenu(tr("&File"));
-	fileMenu->addAction(newAction);
-	fileMenu->addAction(openAction);
-	fileMenu->addAction(saveAction);
-	fileMenu->addAction(saveAsAction);
-	separatorAction = fileMenu->addSeparator();
-	for (int i = 0; i < MaxRecentFiles; ++i)
-		fileMenu->addAction(recentFileActions[i]);
-	fileMenu->addSeparator();
-	fileMenu->addAction(exitAction);
+	homeAction = menuBar()->addAction(tr("&Home"));
+	homeAction->setCheckable(true);
+//	homeMenu->addAction(newAction);
+//	homeMenu->addAction(openAction);
+//	homeMenu->addAction(saveAction);
+//	homeMenu->addAction(saveAsAction);
+//	separatorAction = homeMenu->addSeparator();
+//	for (int i = 0; i < MaxRecentFiles; ++i)
+//		homeMenu->addAction(recentFileActions[i]);
+//	homeMenu->addSeparator();
+//	homeMenu->addAction(exitAction);
+//	homeMenu->setTearOffEnabled(true);
 
-	editMenu = menuBar()->addMenu(tr("&Edit"));
-	editMenu->addAction(cutAction);
-	editMenu->addAction(copyAction);
-	editMenu->addAction(pasteAction);
-	editMenu->addAction(deleteAction);
 
-	selectSubMenu = editMenu->addMenu(tr("&Select"));
-	selectSubMenu->addAction(selectRowAction);
-	selectSubMenu->addAction(selectColumnAction);
-	selectSubMenu->addAction(selectAllAction);
+	formatMenu = menuBar()->addMenu(tr("&Format"));
+	formatMenu->addAction(cutAction);
+	formatMenu->addAction(copyAction);
+	formatMenu->addAction(pasteAction);
+	formatMenu->addAction(deleteAction);
 
-	editMenu->addSeparator();
-	editMenu->addAction(findAction);
-	editMenu->addAction(goToCellAction);
+//	selectSubMenu = formatMenu->addMenu(tr("&Select"));
+//	selectSubMenu->addAction(selectRowAction);
+//	selectSubMenu->addAction(selectColumnAction);
+//	selectSubMenu->addAction(selectAllAction);
 
-	toolsMenu = menuBar()->addMenu(tr("&Tools"));
-	toolsMenu->addAction(recalculateAction);
-	toolsMenu->addAction(sortAction);
 
-	optionsMenu = menuBar()->addMenu(tr("&Options"));
-	optionsMenu->addAction(showGridAction);
-	optionsMenu->addAction(autoRecalcAction);
+	trendMenu = menuBar()->addMenu(tr("&Trend"));
+	trendMenu->addAction(recalculateAction);
+	trendMenu->addAction(sortAction);
+
 
 	menuBar()->addSeparator();
 
@@ -466,14 +477,17 @@ void MainWindow::createToolBars()
 	fileToolBar->addAction(newAction);
 	fileToolBar->addAction(openAction);
 	fileToolBar->addAction(saveAction);
+//	fileToolBar->setIconSize(QSize(100,100));
+	fileToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
 	editToolBar = addToolBar(tr("&Edit"));
+	editToolBar->addAction(pauseAction);
+	editToolBar->addAction(refreshAction);
 	editToolBar->addAction(cutAction);
 	editToolBar->addAction(copyAction);
 	editToolBar->addAction(pasteAction);
-	editToolBar->addSeparator();
-	editToolBar->addAction(findAction);
-	editToolBar->addAction(goToCellAction);
+//	editToolBar->setIconSize(QSize(100, 100));
+	editToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 }
 
 void MainWindow::createStatusBar()
@@ -488,10 +502,7 @@ void MainWindow::createStatusBar()
 	statusBar()->addWidget(locationLabel);
 	statusBar()->addWidget(formulaLabel, 1);
 
-	connect(spreadsheet, SIGNAL(currentCellChanged(int, int, int, int)),
-			this, SLOT(updateStatusBar()));
-	connect(spreadsheet, SIGNAL(modified()),
-			this, SLOT(spreadsheetModified()));
+
 
 	updateStatusBar();
 }
@@ -601,7 +612,7 @@ void MainWindow::updateRecentFileActions()
 			recentFileActions[j]->setVisible(false);
 		}
 	}
-	separatorAction->setVisible(!recentFiles.isEmpty());
+
 }
 
 QString MainWindow::strippedName(const QString &fullFileName)

@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+#include <QtCharts>
+using namespace QtCharts;
+
 
 class Plotter;
 class IconEditor;
@@ -57,7 +60,7 @@ private:
 
 	QTreeWidget *pointsTreeWidget;
 	QScrollArea *scrollArea; //左上角点列表
-	Plotter *Graph;
+	QChartView *Graph;
 	QTableView *LeftBottomTableView;
 	QTreeWidget *detailTreeWidget;
 	QTabWidget * LeftBottomTab; //左下角视图
@@ -76,14 +79,14 @@ private:
 	QAction *recentFileActions[MaxRecentFiles];
 	QAction *separatorAction;
 
-	QMenu *fileMenu;
-	QMenu *editMenu;
-	QMenu *selectSubMenu;
-	QMenu *toolsMenu;
-	QMenu *optionsMenu;
+//	QMenu *homeMenu;
+	QAction *homeAction;
+	QMenu *formatMenu;
+	QMenu *trendMenu;
 	QMenu *helpMenu;
 	QToolBar *fileToolBar;
 	QToolBar *editToolBar;
+
 	QAction *newAction;
 	QAction *openAction;
 	QAction *saveAction;
@@ -93,11 +96,13 @@ private:
 	QAction *copyAction;
 	QAction *pasteAction;
 	QAction *deleteAction;
+
+	QAction *pauseAction;
+	QAction *refreshAction;
+
 	QAction *selectRowAction;
 	QAction *selectColumnAction;
 	QAction *selectAllAction;
-	QAction *findAction;
-	QAction *goToCellAction;
 	QAction *recalculateAction;
 	QAction *sortAction;
 	QAction *showGridAction;

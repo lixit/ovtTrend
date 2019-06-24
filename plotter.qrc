@@ -1,7 +1,5 @@
 <RCC>
-<qresource>
-    <file>images/zoomin.png</file>
-    <file>images/zoomout.png</file>
-    <file>in1.txt</file>
-</qresource>
+    <qresource prefix="/">
+        <file>in1.txt</file>
+    </qresource>
 </RCC>
